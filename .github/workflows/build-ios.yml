@@ -18,22 +18,27 @@ jobs:
       with:
         python-version: '3.9'
     
-    - name: Install dependencies
+    - name: Install Briefcase
       run: |
-        brew install autoconf automake libtool pkg-config
-        pip install Cython==0.29.33
-        pip install git+https://github.com/kivy/kivy-ios.git
+        pip install briefcase
     
-    - name: Build Kivy for iOS
+    - name: Create iOS app with Briefcase
       run: |
-        toolchain build python3 kivy
+        briefcase new --template https://github.com/beeware/briefcase-template --no-input
     
-    - name: Create Xcode project
+    - name: Copy app file
       run: |
-        toolchain create QuizApp $GITHUB_WORKSPACE
+        mkdir -p src/quizapp
+        cp ciao.py src/quizapp/__main__.py
     
-    - name: Upload artifacts
+    - name: Build iOS app
+      run: |
+        briefcase create iOS
+        briefcase build iOS
+        briefcase package iOS --adhoc
+    
+    - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: ios-project
-        path: QuizApp-ios/
+        name: quiz-app-ipa
+        path: '**/*.ipa'
