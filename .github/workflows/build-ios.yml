@@ -1,0 +1,39 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        brew install autoconf automake libtool pkg-config
+        pip install Cython==0.29.33
+        pip install git+https://github.com/kivy/kivy-ios.git
+    
+    - name: Build Kivy for iOS
+      run: |
+        toolchain build python3 kivy
+    
+    - name: Create Xcode project
+      run: |
+        toolchain create QuizApp $GITHUB_WORKSPACE
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-project
+        path: QuizApp-ios/
